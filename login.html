@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Login FMEA</title>
+</head>
+<body>
+
+<h2>Login Sistem FMEA</h2>
+
+Email:<br>
+<input type="text" id="email"><br><br>
+
+Password:<br>
+<input type="password" id="password"><br><br>
+
+<button onclick="login()">Login</button>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBfpBTkwDCE_m2IVX90Y6390w6ti96JRGY",
+  authDomain: "fmea-k3-new.firebaseapp.com",
+  projectId: "fmea-k3-new",
+  storageBucket: "fmea-k3-new.firebasestorage.app",
+  messagingSenderId: "118187375489",
+  appId: "1:118187375489:web:d78e3f4abc44550842c680",
+  measurementId: "G-5CP17NNNMS"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+window.login = async function() {
+
+  let emailInput = document.getElementById("email").value;
+  let passInput = document.getElementById("password").value;
+
+  const querySnapshot = await getDocs(collection(db, "users"));
+
+  let ditemukan = false;
+
+  querySnapshot.forEach((doc) => {
+    let data = doc.data();
+
+    if (data.email === emailInput && data.password === passInput) {
+      ditemukan = true;
+    }
+  });
+
+  if (ditemukan) {
+  localStorage.setItem("login", "true");
+  window.location.href = "dashboard.html";
+} else {
+  alert("Email atau password salah!");
+}
+
+
+}
+
+</script>
+
+</body>
+</html>

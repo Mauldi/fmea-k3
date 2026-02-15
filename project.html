@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>FMEA Proyek</title>
+</head>
+<body>
+
+<h2>Form FMEA Proyek</h2>
+
+<button onclick="kembali()">Kembali</button>
+
+<p id="namaProyek"></p>
+
+<hr>
+
+<div id="fmeaArea"></div>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBfpBTkwDCE_m2IVX90Y6390w6ti96JRGY",
+  authDomain: "fmea-k3-new.firebaseapp.com",
+  projectId: "fmea-k3-new",
+  storageBucket: "fmea-k3-new.firebasestorage.app",
+  messagingSenderId: "118187375489",
+  appId: "1:118187375489:web:d78e3f4abc44550842c680",
+  measurementId: "G-5CP17NNNMS"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+if (localStorage.getItem("login") !== "true") {
+  window.location.href = "login.html";
+}
+
+let projectId = localStorage.getItem("projectId");
+
+if (!projectId) {
+  window.location.href = "projects.html";
+}
+
+async function tampilNama() {
+
+  const docRef = doc(db, "projects", projectId);
+  const docSnap = await getDoc(docRef);
+
+  if (docSnap.exists()) {
+    document.getElementById("namaProyek").innerText =
+      "Proyek: " + docSnap.data().nama;
+  }
+
+}
+
+window.kembali = function() {
+  window.location.href = "projects.html";
+}
+
+tampilNama();
+
+</script>
+
+</body>
+</html>

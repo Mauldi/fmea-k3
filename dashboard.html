@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard</title>
+</head>
+<body>
+
+<h2>Dashboard Sistem FMEA</h2>
+
+<button onclick="goProjects()">Semua Proyek</button><br><br>
+<button onclick="myAccount()">My Account</button><br><br>
+<button onclick="logout()">Logout</button>
+
+<script>
+
+if (localStorage.getItem("login") !== "true") {
+  window.location.href = "login.html";
+}
+
+function goProjects() {
+  window.location.href = "projects.html";
+}
+
+function myAccount() {
+  alert("Halaman account belum dibuat");
+}
+
+function logout() {
+  localStorage.removeItem("login");
+  window.location.href = "login.html";
+}
+
+</script>
+
+</body>
+</html>

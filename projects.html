@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Semua Proyek</title>
+</head>
+<body>
+
+<h2>Semua Proyek</h2>
+
+Nama Proyek:<br>
+<input type="text" id="namaProyek"><br><br>
+
+<button onclick="tambahProyek()">Tambah Proyek</button>
+
+<hr>
+
+<h3>Daftar Proyek</h3>
+<ul id="listProyek"></ul>
+
+<br>
+<button onclick="kembali()">Kembali ke Dashboard</button>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBfpBTkwDCE_m2IVX90Y6390w6ti96JRGY",
+  authDomain: "fmea-k3-new.firebaseapp.com",
+  projectId: "fmea-k3-new",
+  storageBucket: "fmea-k3-new.firebasestorage.app",
+  messagingSenderId: "118187375489",
+  appId: "1:118187375489:web:d78e3f4abc44550842c680",
+  measurementId: "G-5CP17NNNMS"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+if (localStorage.getItem("login") !== "true") {
+  window.location.href = "login.html";
+}
+
+window.tambahProyek = async function() {
+
+  let nama = document.getElementById("namaProyek").value;
+
+  if (nama === "") {
+    alert("Nama proyek tidak boleh kosong");
+    return;
+  }
+
+  await addDoc(collection(db, "projects"), {
+    nama: nama
+  });
+
+  alert("Proyek berhasil ditambahkan!");
+  document.getElementById("namaProyek").value = "";
+  tampilProyek();
+}
+
+async function tampilProyek() {
+
+  const querySnapshot = await getDocs(collection(db, "projects"));
+  let list = document.getElementById("listProyek");
+  list.innerHTML = "";
+
+  querySnapshot.forEach((doc) => {
+
+    const data = doc.data();
+    const id = doc.id;
+
+    list.innerHTML += `
+      <li>
+        <button onclick="masukProyek('${id}')">
+          ${data.nama}
+        </button>
+      </li>
+    `;
+
+  });
+
+}
+
+
+window.kembali = function() {
+  window.location.href = "dashboard.html";
+}
+
+tampilProyek();
+
+</script>
+
+</body>
+</html>
