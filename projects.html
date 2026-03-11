@@ -89,6 +89,11 @@ window.kembali = function() {
   window.location.href = "dashboard.html";
 }
 
+window.masukProyek = function(id) {
+  localStorage.setItem("projectId", id);
+  window.location.href = "project.html";
+}
+
 tampilProyek();
 
 </script>

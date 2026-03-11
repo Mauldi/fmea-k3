@@ -1,25 +1,228 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>FMEA Proyek</title>
+<meta charset="UTF-8">
+<title>FMEA Proyek</title>
+
+<style>
+
+body {
+  font-family: 'Segoe UI', sans-serif;
+  margin: 0;
+  background: #f4f6fb;
+}
+
+.header {
+  background: #1f2d3d;
+  color: white;
+  padding: 15px 30px;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.container {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+}
+
+/* FORM SIDE */
+.form-section {
+  flex: 1;
+}
+
+.table-section {
+  flex: 2;
+}
+
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+h3 {
+  margin-top: 0;
+}
+
+label {
+  font-size: 13px;
+  font-weight: 600;
+}
+
+input {
+  width: 100%;
+  padding: 7px;
+  margin-top: 4px;
+  margin-bottom: 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 13px;
+}
+
+button {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.btn-primary {
+  background: #2c7be5;
+  color: white;
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+button:hover {
+  opacity: 0.9;
+}
+
+/* TABLE */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+table th {
+  background: #2c7be5;
+  color: white;
+  padding: 8px;
+  text-align: center;
+}
+
+table td {
+  padding: 6px;
+  border: 1px solid #e0e0e0;
+}
+
+tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+@media (max-width: 900px) {
+  .container {
+    flex-direction: column;
+  }
+}
+
+</style>
+
 </head>
+
 <body>
 
-<h2>Form FMEA Proyek</h2>
+<div class="header">
+  FMEA Risk Assessment System
+</div>
 
-<button onclick="kembali()">Kembali</button>
+<div class="container">
 
-<p id="namaProyek"></p>
+  <!-- FORM -->
+  <div class="form-section">
+    <div class="card">
 
-<hr>
+      <button onclick="kembali()" class="btn-secondary">Kembali</button>
+      <p id="namaProyek"></p>
 
-<div id="fmeaArea"></div>
+      <h3>Input Data FMEA</h3>
+
+      <label>Item Pekerjaan</label>
+      <input type="text" id="item">
+
+      <label>Aktivitas</label>
+      <input type="text" id="aktivitas">
+
+      <label>Failure Mode</label>
+      <input type="text" id="failure">
+
+      <label>Effect</label>
+      <input type="text" id="effect">
+
+      <label>Severity (S)</label>
+      <input type="number" step="0.01" id="severity">
+
+      <label>Cause</label>
+      <input type="text" id="cause">
+
+      <label>Occurrence (O)</label>
+      <input type="number" step="0.01" id="occurrence">
+
+      <label>Design Control</label>
+      <input type="text" id="control">
+
+      <label>Detection (D)</label>
+      <input type="number" step="0.01" id="detection">
+
+      <button onclick="simpanFMEA()" class="btn-primary">Simpan</button>
+
+    </div>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-section">
+    <div class="card">
+
+      <h3>Data FMEA</h3>
+
+      <div class="table-wrapper">
+        <table id="tabel">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Item</th>
+              <th>Aktivitas</th>
+              <th>Failure</th>
+              <th>Effect</th>
+              <th>S</th>
+              <th>Cause</th>
+              <th>O</th>
+              <th>Control</th>
+              <th>D</th>
+              <th>RPN</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+
+</body>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  collection,
+  addDoc,
+  getDocs,
+  deleteDoc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBfpBTkwDCE_m2IVX90Y6390w6ti96JRGY",
@@ -33,6 +236,7 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+let editId = null;
 
 if (localStorage.getItem("login") !== "true") {
   window.location.href = "login.html";
@@ -45,7 +249,6 @@ if (!projectId) {
 }
 
 async function tampilNama() {
-
   const docRef = doc(db, "projects", projectId);
   const docSnap = await getDoc(docRef);
 
@@ -53,14 +256,187 @@ async function tampilNama() {
     document.getElementById("namaProyek").innerText =
       "Proyek: " + docSnap.data().nama;
   }
+}
+
+async function tampilFMEA() {
+
+  const querySnapshot = await getDocs(collection(db, "fmea"));
+  let tbody = document.querySelector("#tabel tbody");
+  tbody.innerHTML = "";
+
+  let dataArray = [];
+
+  // Ambil hanya data sesuai project
+  querySnapshot.forEach((docSnap) => {
+    let data = docSnap.data();
+    if (data.projectId === projectId) {
+      dataArray.push({
+        id: docSnap.id,
+        ...data
+      });
+    }
+  });
+
+  // 🔥 Buat daftar item unik berdasarkan urutan pertama muncul
+  let itemOrder = [];
+  dataArray.forEach(data => {
+    if (!itemOrder.includes(data.item)) {
+      itemOrder.push(data.item);
+    }
+  });
+
+  let nomorItem = 0;
+  let lastItem = "";
+  let lastAktivitas = "";
+
+  // 🔥 Loop berdasarkan urutan itemOrder
+  itemOrder.forEach(itemName => {
+
+    nomorItem++;
+
+    // Ambil semua data dengan item tersebut
+    let itemData = dataArray.filter(d => d.item === itemName);
+
+    itemData.forEach((data, index) => {
+
+      let tampilNo = "";
+      let tampilItem = "";
+      let tampilAktivitas = "";
+
+      if (index === 0) {
+        tampilNo = nomorItem;
+        tampilItem = data.item;
+        tampilAktivitas = data.aktivitas;
+        lastAktivitas = data.aktivitas;
+      } else if (data.aktivitas !== lastAktivitas) {
+        tampilAktivitas = data.aktivitas;
+        lastAktivitas = data.aktivitas;
+      }
+
+      tbody.innerHTML += `
+        <tr>
+          <td>${tampilNo}</td>
+          <td>${tampilItem}</td>
+          <td>${tampilAktivitas}</td>
+          <td>${data.failure}</td>
+          <td>${data.effect}</td>
+          <td>${data.severity}</td>
+          <td>${data.cause}</td>
+          <td>${data.occurrence}</td>
+          <td>${data.control}</td>
+          <td>${data.detection}</td>
+          <td>${data.rpn}</td>
+          <td>
+            <button onclick="editFMEA('${data.id}')">Edit</button>
+            <button onclick="hapusFMEA('${data.id}')">Hapus</button>
+          </td>
+        </tr>
+      `;
+    });
+
+  });
 
 }
+
+window.simpanFMEA = async function() {
+
+  let item = document.getElementById("item").value;
+  let aktivitas = document.getElementById("aktivitas").value;
+  let failure = document.getElementById("failure").value;
+  let effect = document.getElementById("effect").value;
+  let s = parseFloat(document.getElementById("severity").value);
+  let cause = document.getElementById("cause").value;
+  let o = parseFloat(document.getElementById("occurrence").value);
+  let control = document.getElementById("control").value;
+  let d = parseFloat(document.getElementById("detection").value);
+
+  let rpn = Math.round(s * o * d);
+
+  if (editId) {
+
+    await updateDoc(doc(db, "fmea", editId), {
+      item,
+      aktivitas,
+      failure,
+      effect,
+      severity: s,
+      cause,
+      occurrence: o,
+      control,
+      detection: d,
+      rpn
+    });
+
+    alert("Data berhasil diupdate!");
+    editId = null;
+
+    document.querySelector("button[onclick='simpanFMEA()']").innerText = "Simpan";
+
+  } else {
+
+    await addDoc(collection(db, "fmea"), {
+      projectId: projectId,
+      item,
+      aktivitas,
+      failure,
+      effect,
+      severity: s,
+      cause,
+      occurrence: o,
+      control,
+      detection: d,
+      rpn,
+      createdAt: new Date()
+    });
+
+    alert("Data berhasil disimpan!");
+  }
+
+  tampilFMEA();
+};
+
+window.hapusFMEA = async function(id) {
+
+  if (!confirm("Yakin ingin menghapus data ini?")) return;
+
+  await deleteDoc(doc(db, "fmea", id));
+
+  alert("Data berhasil dihapus");
+  tampilFMEA();
+};
+
+window.editFMEA = async function(id) {
+
+  const docRef = doc(db, "fmea", id);
+  const docSnap = await getDoc(docRef);
+
+  if (docSnap.exists()) {
+
+    const data = docSnap.data();
+
+    document.getElementById("item").value = data.item;
+    document.getElementById("aktivitas").value = data.aktivitas;
+    document.getElementById("failure").value = data.failure;
+    document.getElementById("effect").value = data.effect;
+    document.getElementById("severity").value = data.severity;
+    document.getElementById("cause").value = data.cause;
+    document.getElementById("occurrence").value = data.occurrence;
+    document.getElementById("control").value = data.control;
+    document.getElementById("detection").value = data.detection;
+
+    editId = id;
+
+    document.querySelector("button[onclick='simpanFMEA()']").innerText = "Update";
+  }
+};
 
 window.kembali = function() {
   window.location.href = "projects.html";
-}
+};
 
 tampilNama();
+tampilFMEA();
+
 
 </script>
 
