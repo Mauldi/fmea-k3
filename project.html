@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <title>FMEA Proyek</title>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 <style>
 
 body {
@@ -180,23 +182,42 @@ tr:nth-child(even) {
     <div class="card">
 
       <h3>Data FMEA</h3>
+      <h3>Grafik Severity</h3>
+      <canvas id="chartSeverity"></canvas>
 
+      <h3>Grafik Occurrence</h3>
+      <canvas id="chartOccurrence"></canvas>
+
+      <h3>Grafik Detection</h3>
+      <canvas id="chartDetection"></canvas>
+
+      <h3>Grafik RPN</h3>
+      <canvas id="chartRPN"></canvas>
       <div class="table-wrapper">
         <table id="tabel">
           <thead>
             <tr>
               <th>No</th>
-              <th>Item</th>
-              <th>Aktivitas</th>
-              <th>Failure</th>
-              <th>Effect</th>
-              <th>S</th>
-              <th>Cause</th>
-              <th>O</th>
-              <th>Control</th>
-              <th>D</th>
-              <th>RPN</th>
-              <th>Aksi</th>
+<th>Item</th>
+<th>Aktivitas</th>
+<th>Failure Mode</th>
+
+<th>No Effect</th>
+<th>Effect</th>
+
+<th>S</th>
+
+<th>No Cause</th>
+<th>Cause</th>
+
+<th>O</th>
+
+<th>No Control</th>
+<th>Control</th>
+
+<th>D</th>
+<th>RPN</th>
+<th>Aksi</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -204,6 +225,25 @@ tr:nth-child(even) {
       </div>
 
     </div>
+
+    <div class="card">
+  <h3>Respon Pengendalian Risiko</h3>
+
+  <div class="table-wrapper">
+    <table id="tabelRespon">
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Jenis Pekerjaan</th>
+          <th>Variabel Risiko</th>
+          <th>Penyebab</th>
+          <th>Respon Pengendalian Risiko</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
   </div>
 
 </div>
@@ -220,6 +260,8 @@ import {
   collection,
   addDoc,
   getDocs,
+  query,
+  orderBy,
   deleteDoc,
   updateDoc
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -260,13 +302,19 @@ async function tampilNama() {
 
 async function tampilFMEA() {
 
-  const querySnapshot = await getDocs(collection(db, "fmea"));
+ const q = query(
+  collection(db, "fmea"),
+  orderBy("createdAt", "asc")
+);
+
+const querySnapshot = await getDocs(q);
   let tbody = document.querySelector("#tabel tbody");
   tbody.innerHTML = "";
 
   let dataArray = [];
+  let lastItem = "";
+  let lastAktivitas = "";
 
-  // Ambil hanya data sesuai project
   querySnapshot.forEach((docSnap) => {
     let data = docSnap.data();
     if (data.projectId === projectId) {
@@ -277,65 +325,121 @@ async function tampilFMEA() {
     }
   });
 
-  // 🔥 Buat daftar item unik berdasarkan urutan pertama muncul
-  let itemOrder = [];
-  dataArray.forEach(data => {
-    if (!itemOrder.includes(data.item)) {
-      itemOrder.push(data.item);
-    }
-  });
-
   let nomorItem = 0;
-  let lastItem = "";
-  let lastAktivitas = "";
+  let nomorSub = 0;
 
-  // 🔥 Loop berdasarkan urutan itemOrder
-  itemOrder.forEach(itemName => {
+  dataArray.forEach((data) => {
 
-    nomorItem++;
+  let tampilNo = "";
+  let noEffect = "";
 
-    // Ambil semua data dengan item tersebut
-    let itemData = dataArray.filter(d => d.item === itemName);
+  let tampilItem = "";       // ✅ TAMBAH INI
+  let tampilAktivitas = "";  // ✅ TAMBAH INI
 
-    itemData.forEach((data, index) => {
+    if (data.item !== lastItem) {
 
-      let tampilNo = "";
-      let tampilItem = "";
-      let tampilAktivitas = "";
+  nomorItem++;
+  nomorSub = 1;
 
-      if (index === 0) {
-        tampilNo = nomorItem;
-        tampilItem = data.item;
-        tampilAktivitas = data.aktivitas;
-        lastAktivitas = data.aktivitas;
-      } else if (data.aktivitas !== lastAktivitas) {
-        tampilAktivitas = data.aktivitas;
-        lastAktivitas = data.aktivitas;
-      }
+  tampilNo = nomorItem;
+  noEffect = nomorItem + "." + nomorSub;
 
-      tbody.innerHTML += `
-        <tr>
-          <td>${tampilNo}</td>
-          <td>${tampilItem}</td>
-          <td>${tampilAktivitas}</td>
-          <td>${data.failure}</td>
-          <td>${data.effect}</td>
-          <td>${data.severity}</td>
-          <td>${data.cause}</td>
-          <td>${data.occurrence}</td>
-          <td>${data.control}</td>
-          <td>${data.detection}</td>
-          <td>${data.rpn}</td>
-          <td>
-            <button onclick="editFMEA('${data.id}')">Edit</button>
-            <button onclick="hapusFMEA('${data.id}')">Hapus</button>
-          </td>
-        </tr>
-      `;
-    });
+  tampilItem = data.item;           // ✅ TAMBAH
+  tampilAktivitas = data.aktivitas; // ✅ TAMBAH
 
+  lastItem = data.item;
+  lastAktivitas = data.aktivitas;
+
+} else {
+
+  nomorSub++;
+  noEffect = nomorItem + "." + nomorSub;
+
+  if (data.aktivitas !== lastAktivitas) {
+    tampilAktivitas = data.aktivitas; // ✅ TAMBAH
+    lastAktivitas = data.aktivitas;
+  }
+}
+
+    tbody.innerHTML += `
+      <tr>
+        <td>${tampilNo}</td>
+  <td>${tampilItem}</td>
+  <td>${tampilAktivitas}</td>
+  <td>${data.failure}</td>
+
+  <td>${noEffect}</td>
+  <td>${data.effect}</td>
+
+  <td>${data.severity}</td>
+
+  <td>${noEffect}</td>
+  <td>${data.cause}</td>
+
+  <td>${data.occurrence}</td>
+
+  <td>${noEffect}</td>
+  <td>${data.control}</td>
+
+  <td>${data.detection}</td>
+  <td>${data.rpn}</td>
+
+  <td>
+          <button onclick="editFMEA('${data.id}')">Edit</button>
+          <button onclick="hapusFMEA('${data.id}')">Hapus</button>
+        </td>
+      </tr>
+    `;
   });
 
+// 🔥 Ambil data untuk grafik
+let labels = [];
+let severityData = [];
+let occurrenceData = [];
+let detectionData = [];
+
+dataArray.forEach((d, index) => {
+  labels.push(index + 1);
+  severityData.push(d.severity);
+  occurrenceData.push(d.occurrence);
+  detectionData.push(d.detection);
+});
+
+// 🔥 Grafik Severity
+new Chart(document.getElementById("chartSeverity"), {
+  type: "bar",
+  data: {
+    labels: labels,
+    datasets: [{
+      label: "Severity",
+      data: severityData
+    }]
+  }
+});
+
+// 🔥 Grafik Occurrence
+new Chart(document.getElementById("chartOccurrence"), {
+  type: "bar",
+  data: {
+    labels: labels,
+    datasets: [{
+      label: "Occurrence",
+      data: occurrenceData
+    }]
+  }
+});
+
+// 🔥 Grafik Detection
+new Chart(document.getElementById("chartDetection"), {
+  type: "bar",
+  data: {
+    labels: labels,
+    datasets: [{
+      label: "Detection",
+      data: detectionData
+    }]
+  }
+});
 }
 
 window.simpanFMEA = async function() {
@@ -375,19 +479,19 @@ window.simpanFMEA = async function() {
   } else {
 
     await addDoc(collection(db, "fmea"), {
-      projectId: projectId,
-      item,
-      aktivitas,
-      failure,
-      effect,
-      severity: s,
-      cause,
-      occurrence: o,
-      control,
-      detection: d,
-      rpn,
-      createdAt: new Date()
-    });
+  projectId: projectId,
+  item,
+  aktivitas,
+  failure,
+  effect,
+  severity: s,
+  cause,
+  occurrence: o,
+  control,
+  detection: d,
+  rpn,
+  createdAt: new Date() // ✅ TAMBAHKAN INI
+});
 
     alert("Data berhasil disimpan!");
   }
