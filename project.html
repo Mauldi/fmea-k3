@@ -244,9 +244,14 @@ tr:nth-child(even) {
     </table>
   </div>
 </div>
+
+<button onclick="handleExport()">Export PDF</button>
+
   </div>
 
 </div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 </body>
 
@@ -540,8 +545,60 @@ window.kembali = function() {
 
 tampilNama();
 tampilFMEA();
+// =======================
+// EXPORT PDF FINAL (FIX)
+// =======================
 
+window.handleExport = async function() {
+    console.log("klik export");
 
+    // kasih delay biar chart & tabel siap
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    exportPDF();
+};
+
+window.exportPDF = async function() {
+    const { jsPDF } = window.jspdf;
+
+    // 🔥 ambil semua tampilan utama
+    const element = document.querySelector(".table-section");
+
+    // 🔥 render full (tidak kepotong)
+    const canvas = await html2canvas(element, {
+        scale: 2, // biar HD
+        useCORS: true,
+        scrollY: -window.scrollY,
+        windowHeight: document.body.scrollHeight
+    });
+
+    const imgData = canvas.toDataURL("image/png");
+
+    const pdf = new jsPDF('p', 'mm', 'a4');
+
+    const imgWidth = 210;
+    const pageHeight = 297;
+    const imgHeight = canvas.height * imgWidth / canvas.width;
+
+    let heightLeft = imgHeight;
+    let position = 0;
+
+    // halaman pertama
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    // halaman berikutnya (kalau panjang)
+    while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+    }
+
+    pdf.save("Laporan_FMEA.pdf");
+
+    console.log("PDF berhasil dibuat");
+};
 </script>
 
 </body>
