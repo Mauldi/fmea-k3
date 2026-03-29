@@ -285,6 +285,49 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 let editId = null;
 
+function generateRespon(risiko) {
+
+    risiko = risiko.toLowerCase();
+
+    if (risiko.includes("jatuh")) {
+        return [
+            "Gunakan APD (safety harness)",
+            "Mematuhi SOP pekerjaan",
+            "Pasang railing / pengaman",
+            "Pastikan area kerja aman",
+            "Safety Talk",
+            "Safety Induction"
+        ];
+    }
+
+    if (risiko.includes("sling") || risiko.includes("crane")) {
+        return [
+            "Gunakan APD (helm safety, sepatu)",
+            "Inspeksi sling crane sebelum digunakan",
+            "Pastikan operator memiliki SIO",
+            "Pastikan alat layak pakai",
+            "Mematuhi SOP penggunaan crane",
+            "Safety Talk",
+            "Safety Induction"
+        ];
+    }
+
+    if (risiko.includes("terpeleset")) {
+        return [
+            "Gunakan sepatu safety",
+            "Pasang rambu peringatan",
+            "Jaga kebersihan area kerja",
+            "Safety Talk"
+        ];
+    }
+
+    return [
+        "Gunakan APD sesuai pekerjaan",
+        "Mematuhi SOP",
+        "Safety Talk"
+    ];
+}
+
 if (localStorage.getItem("login") !== "true") {
   window.location.href = "login.html";
 }
@@ -396,7 +439,7 @@ const querySnapshot = await getDocs(q);
       </tr>
     `;
   });
-
+tampilRespon(dataArray);
 // 🔥 Ambil data untuk grafik
 let labels = [];
 let severityData = [];
@@ -446,7 +489,30 @@ new Chart(document.getElementById("chartDetection"), {
   }
 });
 }
+function tampilRespon(dataArray) {
 
+    const tbody = document.querySelector("#tabelRespon tbody");
+    tbody.innerHTML = "";
+
+    dataArray.forEach((data, index) => {
+
+        const responList = generateRespon(data.failure);
+
+        const responHTML = responList.map(r => `• ${r}`).join("<br>");
+
+        const row = `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${data.item}</td>
+                <td>${data.failure}</td>
+                <td>${data.cause}</td>
+                <td>${responHTML}</td>
+            </tr>
+        `;
+
+        tbody.innerHTML += row;
+    });
+}
 window.simpanFMEA = async function() {
 
   let item = document.getElementById("item").value;
