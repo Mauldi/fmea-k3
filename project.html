@@ -151,25 +151,25 @@ tr:nth-child(even) {
       <label>Aktivitas</label>
       <input type="text" id="aktivitas">
 
-      <label>Failure Mode</label>
+      <label>Failure Mode (kegagalan)</label>
       <input type="text" id="failure">
 
-      <label>Effect</label>
+      <label>Effect (dampak)</label>
       <input type="text" id="effect">
 
-      <label>Severity (S)</label>
+      <label>Severity (Keparahan)</label>
       <input type="number" step="0.01" id="severity">
 
-      <label>Cause</label>
+      <label>Cause (penyebab)</label> 
       <input type="text" id="cause">
 
-      <label>Occurrence (O)</label>
+      <label>Occurrence (Frekuensi)</label>
       <input type="number" step="0.01" id="occurrence">
 
-      <label>Design Control</label>
+      <label>Design Control (Pengendalian)</label>
       <input type="text" id="control">
 
-      <label>Detection (D)</label>
+      <label>Detection (Deteksi)</label>
       <input type="number" step="0.01" id="detection">
 
       <button onclick="simpanFMEA()" class="btn-primary">Simpan</button>
@@ -180,8 +180,83 @@ tr:nth-child(even) {
   <!-- TABLE -->
   <div class="table-section">
     <div class="card">
+<h2 style="text-align:center; margin-bottom:20px;">
+  Dokumen Failure Mode and Effect Analysis
+</h2>
+<div style="margin-bottom:25px;">
 
-      <h3>Data FMEA</h3>
+  <h3 style="border-bottom:2px solid #2c7be5;">
+    Informasi Proyek
+  </h3>
+
+  <table style="font-size:13px;">
+    <tr>
+      <td width="150"><b>Proyek</b></td>
+      <td>: <span id="infoProyek"></span></td>
+    </tr>
+    <tr>
+      <td><b>Lokasi</b></td>
+      <td>: <span id="infoLokasi"></span></td>
+    </tr>
+    <tr>
+      <td><b>Jenis Pekerjaan</b></td>
+      <td>: <span id="infoJenis"></span></td>
+    </tr>
+    <tr>
+      <td><b>Tanggal</b></td>
+      <td>: <span id="infoTanggal"></span></td>
+    </tr>
+    <tr>
+      <td><b>Disusun oleh</b></td>
+      <td>: <span id="infoDisusun"></span></td>
+    </tr>
+    <tr>
+      <td><b>Diperiksa oleh</b></td>
+      <td>: <span id="infoPeriksa"></span></td>
+    </tr>
+    <tr>
+      <td><b>Disetujui oleh</b></td>
+      <td>: <span id="infoSetuju"></span></td>
+    </tr>
+  </table>
+
+</div>
+<h3>Data FMEA</h3>
+      
+      <div class="table-wrapper">
+        <table id="tabel">
+          <thead>
+            <tr>
+              <th>No</th>
+<th>Item</th>
+<th>Aktivitas</th>
+<th>Failure Mode (kegagalan)</th>
+
+<th>No Effect</th>
+<th>Effect (dampak)</th>
+
+<th>Severity (Keparahan)</th>
+
+<th>No Cause</th>
+<th>Cause (penyebab)</th>
+
+<th>Occurrence (Frekuensi)</th>
+
+<th>No Control</th>
+<th>Control (Pengendalian)</th>
+
+<th>Detection (Deteksi)</th>
+<th>Risk Priority Number (Nilai Prioritas Risiko)</th>
+<th>Action Priority(Prioritas Tindakan)</th>
+<th>Respon Pengendalian Risiko</th>
+<th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+    </div>
       <h3>Grafik Severity</h3>
       <canvas id="chartSeverity"></canvas>
 
@@ -193,57 +268,7 @@ tr:nth-child(even) {
 
       <h3>Grafik RPN</h3>
       <canvas id="chartRPN"></canvas>
-      <div class="table-wrapper">
-        <table id="tabel">
-          <thead>
-            <tr>
-              <th>No</th>
-<th>Item</th>
-<th>Aktivitas</th>
-<th>Failure Mode</th>
-
-<th>No Effect</th>
-<th>Effect</th>
-
-<th>S</th>
-
-<th>No Cause</th>
-<th>Cause</th>
-
-<th>O</th>
-
-<th>No Control</th>
-<th>Control</th>
-
-<th>D</th>
-<th>RPN</th>
-<th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
-      </div>
-
-    </div>
-
-    <div class="card">
-  <h3>Respon Pengendalian Risiko</h3>
-
-  <div class="table-wrapper">
-    <table id="tabelRespon">
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>Jenis Pekerjaan</th>
-          <th>Variabel Risiko</th>
-          <th>Penyebab</th>
-          <th>Respon Pengendalian Risiko</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-  </div>
-</div>
+    
 
 <button onclick="handleExport()">Export PDF</button>
 
@@ -285,49 +310,42 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 let editId = null;
 
+function getAP(rpn) {
+    if (rpn >= 200) {
+        return "High";
+    } else if (rpn >= 100) {
+        return "Medium";
+    } else {
+        return "Low";
+    }
+}
 function generateRespon(risiko) {
 
     risiko = risiko.toLowerCase();
 
     if (risiko.includes("jatuh")) {
         return [
-            "Gunakan APD (safety harness)",
-            "Mematuhi SOP pekerjaan",
-            "Pasang railing / pengaman",
-            "Pastikan area kerja aman",
+            "Gunakan safety harness",
+            "Pasang railing pengaman",
             "Safety Talk",
-            "Safety Induction"
+            "Mematuhi SOP"
         ];
     }
 
     if (risiko.includes("sling") || risiko.includes("crane")) {
         return [
-            "Gunakan APD (helm safety, sepatu)",
-            "Inspeksi sling crane sebelum digunakan",
-            "Pastikan operator memiliki SIO",
-            "Pastikan alat layak pakai",
-            "Mematuhi SOP penggunaan crane",
-            "Safety Talk",
-            "Safety Induction"
-        ];
-    }
-
-    if (risiko.includes("terpeleset")) {
-        return [
-            "Gunakan sepatu safety",
-            "Pasang rambu peringatan",
-            "Jaga kebersihan area kerja",
+            "Gunakan APD lengkap",
+            "Inspeksi sling crane",
+            "Pastikan operator bersertifikat",
             "Safety Talk"
         ];
     }
 
     return [
-        "Gunakan APD sesuai pekerjaan",
-        "Mematuhi SOP",
-        "Safety Talk"
+        "Gunakan APD",
+        "Mematuhi SOP"
     ];
 }
-
 if (localStorage.getItem("login") !== "true") {
   window.location.href = "login.html";
 }
@@ -430,8 +448,16 @@ const querySnapshot = await getDocs(q);
   <td>${data.control}</td>
 
   <td>${data.detection}</td>
-  <td>${data.rpn}</td>
+ <td>${data.rpn}</td>
 
+<td style="font-weight:bold; color:
+${data.rpn >= 200 ? 'red' : data.rpn >= 100 ? 'orange' : 'green'}">
+${getAP(data.rpn)}
+</td>
+
+<td>
+${generateRespon(data.failure).map(r => "• " + r).join("<br>")}
+</td>
   <td>
           <button onclick="editFMEA('${data.id}')">Edit</button>
           <button onclick="hapusFMEA('${data.id}')">Hapus</button>
@@ -439,19 +465,35 @@ const querySnapshot = await getDocs(q);
       </tr>
     `;
   });
-tampilRespon(dataArray);
+
 // 🔥 Ambil data untuk grafik
 let labels = [];
 let severityData = [];
 let occurrenceData = [];
 let detectionData = [];
+let rpnData = [];
+let labelItem = 0;
+let labelSub = 0;
+let lastLabelItem = "";
 
-dataArray.forEach((d, index) => {
-  labels.push(index + 1);
+dataArray.forEach((d) => {
+
+  if (d.item !== lastLabelItem) {
+    labelItem++;
+    labelSub = 1;
+    lastLabelItem = d.item;
+  } else {
+    labelSub++;
+  }
+
+  labels.push(`${labelItem}.${labelSub}`);
+
   severityData.push(d.severity);
   occurrenceData.push(d.occurrence);
   detectionData.push(d.detection);
+  rpnData.push(d.rpn);
 });
+
 
 // 🔥 Grafik Severity
 new Chart(document.getElementById("chartSeverity"), {
@@ -462,7 +504,16 @@ new Chart(document.getElementById("chartSeverity"), {
       label: "Severity",
       data: severityData
     }]
+  },
+  options: {
+  scales: {
+    y: {
+      beginAtZero: true,
+      min: 0,
+      max: 10
+    }
   }
+}
 });
 
 // 🔥 Grafik Occurrence
@@ -474,7 +525,16 @@ new Chart(document.getElementById("chartOccurrence"), {
       label: "Occurrence",
       data: occurrenceData
     }]
+  },
+  options: {
+  scales: {
+    y: {
+      beginAtZero: true,
+      min: 0,
+      max: 10
+    }
   }
+}
 });
 
 // 🔥 Grafik Detection
@@ -486,33 +546,41 @@ new Chart(document.getElementById("chartDetection"), {
       label: "Detection",
       data: detectionData
     }]
+  },
+  options: {
+  scales: {
+    y: {
+      beginAtZero: true,
+      min: 0,
+      max: 10
+    }
   }
+}
+});
+
+
+// 🔥 Grafik RPN
+new Chart(document.getElementById("chartRPN"), {
+  type: "bar",
+  data: {
+    labels: labels,
+    datasets: [{
+      label: "RPN",
+      data: rpnData
+    }]
+  },
+  options: {
+  scales: {
+    y: {
+      beginAtZero: true,
+      min: 0,
+      max: 1000
+    }
+  }
+}
 });
 }
-function tampilRespon(dataArray) {
 
-    const tbody = document.querySelector("#tabelRespon tbody");
-    tbody.innerHTML = "";
-
-    dataArray.forEach((data, index) => {
-
-        const responList = generateRespon(data.failure);
-
-        const responHTML = responList.map(r => `• ${r}`).join("<br>");
-
-        const row = `
-            <tr>
-                <td>${index + 1}</td>
-                <td>${data.item}</td>
-                <td>${data.failure}</td>
-                <td>${data.cause}</td>
-                <td>${responHTML}</td>
-            </tr>
-        `;
-
-        tbody.innerHTML += row;
-    });
-}
 window.simpanFMEA = async function() {
 
   let item = document.getElementById("item").value;
