@@ -114,8 +114,20 @@ tr:nth-child(even) {
   background: #f9f9f9;
 }
 
-.table-wrapper {
-  overflow-x: auto;
+#exportData .table-wrapper {
+  overflow-x: visible;
+}
+
+#exportData table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+#exportData th,
+#exportData td {
+  font-size: 10px;   /* kecilin biar muat */
+  padding: 4px;
+  word-break: break-word;
 }
 
 @media (max-width: 900px) {
@@ -123,7 +135,17 @@ tr:nth-child(even) {
     flex-direction: column;
   }
 }
-
+.page {
+  width: 794px;
+  min-height: 1123px;
+  padding: 20px;
+  background: white;
+  page-break-after: always;
+}
+canvas {
+  width: 100% !important;
+  height: auto !important;
+}
 </style>
 
 </head>
@@ -176,50 +198,101 @@ tr:nth-child(even) {
 
     </div>
   </div>
+  <!-- COVER -->
+<div id="exportData">
+<div class="page" id="coverPage">
+  <!-- HEADER -->
+  <div style="display:flex; justify-content:space-between; font-size:12px;">
+    <span><i>Dokumen rahasia</i></span>
+    <span>Tanggal cetak: __________</span>
+  </div>
 
+  <br>
+
+  <!-- JUDUL -->
+  <div style="border:2px solid black; display:flex;">
+    <div style="width:100px; border-right:2px solid black; text-align:center; font-weight:bold; padding:10px;">
+      FMEA
+    </div>
+    <div style="flex:1; text-align:center; font-weight:bold; padding:10px;">
+      Failure Mode and Effect Analysis
+    </div>
+  </div>
+
+  <br>
+
+  <!-- INFORMASI UTAMA -->
+  <div style="border:2px solid black; padding:15px;">
+
+    <table style="width:100%; font-size:14px;">
+      <tr>
+        <td width="200"><b>Proyek</b></td>
+        <td>: ________________________________</td>
+      </tr>
+      <tr>
+        <td><b>Lokasi</b></td>
+        <td>: ________________________________</td>
+      </tr>
+      <tr>
+        <td><b>Jenis Pekerjaan</b></td>
+        <td>: ________________________________</td>
+      </tr>
+      <tr>
+        <td><b>Tanggal</b></td>
+        <td>: ________________________________</td>
+      </tr>
+      <tr>
+        <td><b>Disusun oleh</b></td>
+        <td>: ________________________________</td>
+      </tr>
+      <tr>
+        <td><b>Diperiksa oleh</b></td>
+        <td>: ________________________________</td>
+      </tr>
+      <tr>
+        <td><b>Disetujui oleh</b></td>
+        <td>: ________________________________</td>
+      </tr>
+    </table>
+
+    <br>
+
+    <!-- DESKRIPSI -->
+    <div>
+      <b>Deskripsi Singkat:</b>
+      <div style="border:1px solid black; height:80px; margin-top:5px;"></div>
+    </div>
+
+    <br>
+
+    <!-- JENIS FMEA -->
+    <div>
+      <b>Jenis FMEA:</b><br>
+      ☐ Process &nbsp;&nbsp;&nbsp; ☐ Design
+    </div>
+
+  </div>
+
+  <br>
+
+  <!-- FOOTER -->
+  <div style="display:flex; justify-content:space-between; font-size:12px;">
+    <span>Cover FMEA</span>
+    <span>Halaman 1</span>
+  </div>
+
+  <!-- HALAMAN BARU -->
+  <div style="page-break-before: always;"></div>
+
+  <!-- ISI -->
+  <div id="exportData"></div>
+  
+ </div>
   <!-- TABLE -->
+<div class="page">
   <div class="table-section">
     <div class="card">
-<h2 style="text-align:center; margin-bottom:20px;">
-  Dokumen Failure Mode and Effect Analysis
-</h2>
 <div style="margin-bottom:25px;">
-
-  <h3 style="border-bottom:2px solid #2c7be5;">
-    Informasi Proyek
-  </h3>
-
-  <table style="font-size:13px;">
-    <tr>
-      <td width="150"><b>Proyek</b></td>
-      <td>: <span id="infoProyek"></span></td>
-    </tr>
-    <tr>
-      <td><b>Lokasi</b></td>
-      <td>: <span id="infoLokasi"></span></td>
-    </tr>
-    <tr>
-      <td><b>Jenis Pekerjaan</b></td>
-      <td>: <span id="infoJenis"></span></td>
-    </tr>
-    <tr>
-      <td><b>Tanggal</b></td>
-      <td>: <span id="infoTanggal"></span></td>
-    </tr>
-    <tr>
-      <td><b>Disusun oleh</b></td>
-      <td>: <span id="infoDisusun"></span></td>
-    </tr>
-    <tr>
-      <td><b>Diperiksa oleh</b></td>
-      <td>: <span id="infoPeriksa"></span></td>
-    </tr>
-    <tr>
-      <td><b>Disetujui oleh</b></td>
-      <td>: <span id="infoSetuju"></span></td>
-    </tr>
-  </table>
-
 </div>
 <h3>Data FMEA</h3>
       
@@ -257,23 +330,27 @@ tr:nth-child(even) {
       </div>
 
     </div>
+     <div class="page">
       <h3>Grafik Severity</h3>
       <canvas id="chartSeverity"></canvas>
 
+      <div class="page">
       <h3>Grafik Occurrence</h3>
       <canvas id="chartOccurrence"></canvas>
 
+      <div class="page">
       <h3>Grafik Detection</h3>
       <canvas id="chartDetection"></canvas>
 
+      <div class="page">
       <h3>Grafik RPN</h3>
       <canvas id="chartRPN"></canvas>
     
+    </div>
 
 <button onclick="handleExport()">Export PDF</button>
 
   </div>
-
 </div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -679,59 +756,74 @@ window.kembali = function() {
 
 tampilNama();
 tampilFMEA();
+function convertChartToImage(chartId) {
+  const canvas = document.getElementById(chartId);
+  if (!canvas) return;
+
+  const img = document.createElement("img");
+  img.src = canvas.toDataURL("image/png");
+  img.style.width = "100%";
+
+  canvas.parentNode.replaceChild(img, canvas);
+}
+
+
 // =======================
 // EXPORT PDF FINAL (FIX)
 // =======================
 
-window.handleExport = async function() {
-    console.log("klik export");
+window.handleExport = async function () {
 
-    // kasih delay biar chart & tabel siap
-    await new Promise(resolve => setTimeout(resolve, 500));
+  console.log("klik export");
 
-    exportPDF();
+  // ⛔ ubah semua chart jadi gambar dulu
+  convertChartToImage("chartSeverity");
+  convertChartToImage("chartOccurrence");
+  convertChartToImage("chartDetection");
+  convertChartToImage("chartRPN");
+
+  // kasih delay dikit
+  await new Promise(resolve => setTimeout(resolve, 500));
+
+  exportPDF();
 };
 
-window.exportPDF = async function() {
-    const { jsPDF } = window.jspdf;
+window.exportPDF = async function () {
+  const { jsPDF } = window.jspdf;
 
-    // 🔥 ambil semua tampilan utama
-    const element = document.querySelector(".table-section");
+  const element = document.getElementById("exportData");
 
-    // 🔥 render full (tidak kepotong)
-    const canvas = await html2canvas(element, {
-        scale: 2, // biar HD
-        useCORS: true,
-        scrollY: -window.scrollY,
-        windowHeight: document.body.scrollHeight
-    });
+  const pdf = new jsPDF("p", "pt", "a4");
 
-    const imgData = canvas.toDataURL("image/png");
+  const canvas = await html2canvas(element, {
+    scale: 2,
+    useCORS: true,
+    scrollY: -window.scrollY
+  });
 
-    const pdf = new jsPDF('p', 'mm', 'a4');
+  const imgData = canvas.toDataURL("image/png");
 
-    const imgWidth = 210;
-    const pageHeight = 297;
-    const imgHeight = canvas.height * imgWidth / canvas.width;
+  const imgWidth = 595;
+  const pageHeight = 842;
 
-    let heightLeft = imgHeight;
-    let position = 0;
+  const imgHeight = (canvas.height * imgWidth) / canvas.width;
+  let heightLeft = imgHeight;
 
-    // halaman pertama
-    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+  let position = 0;
+
+  // halaman pertama
+  pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+  heightLeft -= pageHeight;
+
+  // halaman berikutnya
+  while (heightLeft > 0) {
+    position = heightLeft - imgHeight;
+    pdf.addPage();
+    pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
     heightLeft -= pageHeight;
+  }
 
-    // halaman berikutnya (kalau panjang)
-    while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-    }
-
-    pdf.save("Laporan_FMEA.pdf");
-
-    console.log("PDF berhasil dibuat");
+  pdf.save("FMEA.pdf");
 };
 </script>
 
